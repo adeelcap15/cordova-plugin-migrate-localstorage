@@ -13,6 +13,10 @@
 
     // Bail out if dest file exists
     if ([fileManager fileExistsAtPath:dest]) {
+        NSError *err = nil;
+        [fileManager removeItemAtPath:dest error:&err];
+
+        if (err != nil)
         return NO;
     }
 
@@ -49,14 +53,18 @@
     target = [target stringByAppendingPathComponent:bundleIdentifier];
 #endif
 
-    target = [target stringByAppendingPathComponent:@"WebsiteData/LocalStorage/file__0.localstorage"];
+    target = [target stringByAppendingPathComponent:@"WebsiteData/LocalStorage/app_localhost_0.localstorage"];
 
     // Only copy data if no existing localstorage data exists yet for wkwebview
-    if (![[NSFileManager defaultManager] fileExistsAtPath:target]) {
+   // if (![[NSFileManager defaultManager] fileExistsAtPath:target]) {
+    if(![[NSUserDefaults standardUserDefaults] boolForKey:@"is_localstorage_migrated"]) {
+
         NSLog(@"No existing localstorage data found for WKWebView. Migrating data from UIWebView");
         [self copyFrom:original to:target];
         [self copyFrom:[original stringByAppendingString:@"-shm"] to:[target stringByAppendingString:@"-shm"]];
         [self copyFrom:[original stringByAppendingString:@"-wal"] to:[target stringByAppendingString:@"-wal"]];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"is_localstorage_migrated"];
+
     }
 }
 
